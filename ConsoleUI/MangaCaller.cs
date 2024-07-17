@@ -91,11 +91,7 @@ namespace ConsoleUI
             var host = images?.baseUrl;
             var chapterHash = images.chapter.hash;
             var data = images.chapter.data;
-            Console.WriteLine(host);
-            Console.WriteLine(chapterHash);
-            Console.WriteLine(data);
-            Console.WriteLine(resBody);
-
+        
             // loop through data image list make calls and write data to file 
             // Read input from stream, write file to directory
             string directoryPath = $"C:\\Users\\ZPC\\MangaDex/{id}";
