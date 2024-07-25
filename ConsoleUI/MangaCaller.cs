@@ -94,15 +94,17 @@ namespace ConsoleUI
 
             // loop through data image list make calls and write data to file 
             // Read input from stream, write file to directory
-            string directoryPath = $"C:\\Users\\ZPC\\MangaDex/{id}"; // Add to Root
-            Directory.CreateDirectory(directoryPath);
+
+            // Home Directory of Machine 
+            string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); 
+            Directory.CreateDirectory(homeDirectory + $"\\MangaDex/{id}".Trim() );
 
             for (int i = 0; i < data.Count; i++)
             {
                 using HttpResponseMessage resp = await client.GetAsync($"{host}/data/{chapterHash}/{data[i]}");
                 resp.EnsureSuccessStatusCode();
                 byte[] chapImage = await resp.Content.ReadAsByteArrayAsync();
-                string filePath = Path.Combine(directoryPath, $"image{i + 1}.jpg");
+                string filePath = Path.Combine(homeDirectory, $"image{i + 1}.jpg");
                 await File.WriteAllBytesAsync(filePath, chapImage);
 
             }
