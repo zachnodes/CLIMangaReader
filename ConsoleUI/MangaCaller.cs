@@ -14,7 +14,7 @@ namespace ConsoleUI
 
         private static readonly string baseUrl = "https://api.mangadex.org";
 
-        public static async Task SearchManga(HttpClient client, string title, int limit)
+        public static async Task<string[]> SearchManga(HttpClient client, string title, int limit)
         {
 
             // Add querys here
@@ -22,31 +22,31 @@ namespace ConsoleUI
                 {"title", $"{title}" },
 
             };
-            var encodedQuery = new FormUrlEncodedContent(titleSearch).ReadAsStringAsync().Result;   
-            
+            var encodedQuery = new FormUrlEncodedContent(titleSearch).ReadAsStringAsync().Result;
+
             // Add headers here
             client.DefaultRequestHeaders.UserAgent.ParseAdd("MyApp/1.0"); //add more details about client sending req
-          
+
             // Make Request
             using HttpResponseMessage res = await client.GetAsync($"{baseUrl}/manga?{encodedQuery}&limit={limit}");
             res.EnsureSuccessStatusCode();
             string resBody = await res.Content.ReadAsStringAsync();
 
+            string[] options = new string[limit];
+
             Root? model = JsonSerializer.Deserialize<Root>($""" {resBody} """);
             for (int i = 0; i < model?.data.Count; i++)
             {
-               
-                Console.WriteLine($"Title: {model?.data[i]?.attributes?.title?.en}, ---> Id: {model?.data[i].id}\n" );
+                options[i] = $"Title: {model?.data[i]?.attributes?.title?.en}, Id: {model?.data[i].id}\n";
+
             }
 
-            // Write to console something like "copy id to search for chapter list"
-            
+
+            return options;
         }
 
-        public static async Task ChapterList(HttpClient client, string id)
+        public static async Task<string[]> ChapterList(HttpClient client, string id)
         {
-            
-            string[] contentRating = { "safe", "suggestive", "erotica"};
 
             string queryString = $"contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&includeFutureUpdates=1&order[volume]=asc&order[chapter]=asc";
 
@@ -60,20 +60,20 @@ namespace ConsoleUI
             res.EnsureSuccessStatusCode();
             string resBody = await res.Content.ReadAsStringAsync();
 
-            //should write list of chapters with ids in acsending order
 
-            
             CRoot? chapterModel = JsonSerializer.Deserialize<CRoot>(resBody);
-
-            // No need for loop, just add translatedLanguage array as query param
+            string[] chapterList = new string[chapterModel.data.Count];
+            // No need for if statement, just add translatedLanguage array as query param
             for (int i = 0; i < chapterModel.data.Count; i++)
             {
                 if (chapterModel.data[i].attributes.translatedLanguage == "en")
                 {
-                    Console.WriteLine($"Chapter: {chapterModel.data[i].attributes.chapter}\nTitle: {chapterModel.data[i].attributes.title}\nId: {chapterModel.data[i].id}\n");
+                    chapterList[i] = $"Chapter: {chapterModel.data[i].attributes.chapter}\nTitle: {chapterModel.data[i].attributes.title}\nId: {chapterModel.data[i].id}\n";
                 }
             }
-            
+
+            return chapterList;
+
         }
 
         // This function should get images for given chapter, download to file system + open a view to read chapter
@@ -84,17 +84,17 @@ namespace ConsoleUI
             using HttpResponseMessage res = await client.GetAsync($"{baseUrl}/at-home/server/{id}");
             res.EnsureSuccessStatusCode();
             string resBody = await res.Content.ReadAsStringAsync();
-            
+
 
             CRoot? images = JsonSerializer.Deserialize<CRoot>(resBody);
 
             var host = images?.baseUrl;
             var chapterHash = images.chapter.hash;
             var data = images.chapter.data;
-        
+
             // loop through data image list make calls and write data to file 
             // Read input from stream, write file to directory
-            string directoryPath = $"C:\\Users\\ZPC\\MangaDex/{id}";
+            string directoryPath = $"C:\\Users\\ZPC\\MangaDex/{id}"; // Add to Root
             Directory.CreateDirectory(directoryPath);
 
             for (int i = 0; i < data.Count; i++)
@@ -108,7 +108,7 @@ namespace ConsoleUI
             }
             Console.WriteLine("finished");
         }
-        
+
 
     }
 }
