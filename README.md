@@ -4,4 +4,4 @@
 
  Project Under Development
 
- Currently trying to figure out how to open the MAUI view from the console app once user finishes downloading desired chapter
+ Currently trying to figure out how to execute the MAUI interface from the console app once user finishes downloading desired chapter
